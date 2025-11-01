@@ -39,6 +39,7 @@ def _standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
       - lap_number (int)
       - latitude (float)
       - longitude (float)
+      - distance (float)
       - average_speed (float, optional)
       - total_time_ms (int, optional)
       - lap_time_ms (int, optional)
@@ -71,6 +72,9 @@ def _standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
     lon_col = has("longitude", "lon", "lng", "long")
     if lat_col: rename[lat_col] = "latitude"
     if lon_col: rename[lon_col] = "longitude"
+    # distance-like
+    dist_col = has("distance", "dist", "d")
+    if dist_col: rename[dist_col] = "distance"
     # optional
     avg_sp_col = has("average_speed", "avg_speed", "mean_speed")
     if avg_sp_col: rename[avg_sp_col] = "average_speed"
@@ -95,6 +99,9 @@ def _standardize_columns(df: pd.DataFrame) -> pd.DataFrame:
         df["latitude"] = pd.to_numeric(df["latitude"], errors="coerce")
     if "longitude" in df:
         df["longitude"] = pd.to_numeric(df["longitude"], errors="coerce")
+
+    if "distance" in df:
+        df["distance"] = pd.to_numeric(df["distance"], errors="coerce")
 
     for opt in ["average_speed", "total_time_ms", "lap_time_ms"]:
         if opt in df:
@@ -189,6 +196,13 @@ if smooth and smooth > 1 and "speed" in df:
 else:
     speed_col = "speed"
 
+# Normalize distance per lap (reset to 0 at the start of each lap)
+if "distance" in df and "lap_number" in df:
+    df["distance_normalized"] = df.groupby("lap_number")["distance"].transform(lambda x: x - x.min())
+else:
+    if "distance" in df:
+        df["distance_normalized"] = df["distance"]
+
 # Lap filter
 laps = sorted(df["lap_number"].dropna().unique().tolist()) if "lap_number" in df else [1]
 with st.sidebar:
@@ -219,6 +233,48 @@ else:
     fig_line.update_traces(mode=line_mode)
     fig_line.update_layout(legend_title_text="ラップ", hovermode="x unified")
     st.plotly_chart(fig_line, use_container_width=True)
+
+# -----------------------------
+# Distance vs Speed (Plotly) - Multiple Charts
+# -----------------------------
+st.subheader("距離 vs 速度 (ラップ別カラー)")
+if "distance_normalized" not in df_plot:
+    st.warning("このCSVには 'distance' 列が見つかりませんでした。列名を 'distance' にするか、'dist' 等にしてください。")
+elif "speed" not in df_plot:
+    st.warning("このCSVには 'speed' 列が見つかりませんでした。列名を 'speed' にするか、'velocity' 等にしてください。")
+else:
+    line_mode = "lines+markers" if show_markers else "lines"
+
+    # Define lap groups for each chart
+    lap_groups = [
+        {"title": "ラップ 1-2", "laps": [1, 2]},
+        {"title": "ラップ 3-5", "laps": [3, 4, 5]},
+        {"title": "ラップ 6-7", "laps": [6, 7]},
+    ]
+
+    for group in lap_groups:
+        # Filter data for the specified laps
+        df_group = df_plot[df_plot["lap_number"].isin(group["laps"])].copy()
+
+        if not df_group.empty:
+            st.markdown(f"### {group['title']}")
+            fig_dist = px.line(
+                df_group,
+                x="distance_normalized",
+                y=speed_col,
+                color=df_group["lap_number"].astype(str),
+                labels={"distance_normalized": "距離 (m)", speed_col: "速度", "color": "ラップ"},
+                markers=show_markers,
+            )
+            fig_dist.update_traces(mode=line_mode)
+            fig_dist.update_layout(
+                legend_title_text="ラップ",
+                hovermode="x unified",
+                xaxis=dict(range=[0, 3000])
+            )
+            st.plotly_chart(fig_dist, use_container_width=True)
+        else:
+            st.info(f"{group['title']}: データがありません")
 
 # -----------------------------
 # Map (Plotly Mapbox)
@@ -256,4 +312,4 @@ else:
 with st.expander("データの先頭を表示"):
     st.dataframe(df_plot.head(200))
 
-st.caption("ヒント: 速度列は 'speed'、ラップ列は 'lap_number'、時刻は 'timestamp_ms' (UNIX epoch ms) を推奨。自動である程度の列名を推測します。")
+st.caption("ヒント: 速度列は 'speed'、距離列は 'distance'、ラップ列は 'lap_number'、時刻は 'timestamp_ms' (UNIX epoch ms) を推奨。自動である程度の列名を推測します。")
