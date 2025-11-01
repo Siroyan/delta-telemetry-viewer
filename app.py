@@ -208,6 +208,10 @@ laps = sorted(df["lap_number"].dropna().unique().tolist()) if "lap_number" in df
 with st.sidebar:
     sel_laps = st.multiselect("表示するラップ", laps, default=laps)
 
+    st.header("3) ラップ詳細表示")
+    detail_lap = st.selectbox("詳細を見るラップ", options=[None] + laps, format_func=lambda x: "選択なし" if x is None else f"ラップ {x}")
+    show_detail = detail_lap is not None
+
 if "lap_number" in df:
     df_plot = df[df["lap_number"].isin(sel_laps)].copy()
 else:
@@ -305,6 +309,96 @@ else:
         # OpenStreetMap style doesn't need a token
         fig_map.update_layout(mapbox_style="open-street-map", legend_title_text="ラップ")
         st.plotly_chart(fig_map, use_container_width=True)
+
+# -----------------------------
+# Lap Detail View
+# -----------------------------
+if show_detail:
+    st.divider()
+    st.header(f"ラップ {detail_lap} の詳細")
+
+    # Filter data for the selected lap
+    df_detail = df[df["lap_number"] == detail_lap].copy()
+
+    if df_detail.empty:
+        st.warning(f"ラップ {detail_lap} のデータが見つかりません。")
+    else:
+        # Create two columns for side-by-side display
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("地図")
+            # Map for selected lap
+            if "latitude" not in df_detail or "longitude" not in df_detail:
+                st.warning("緯度・経度データがありません。")
+            else:
+                df_map_detail = df_detail.dropna(subset=["latitude", "longitude"]).copy()
+                if df_map_detail.empty:
+                    st.info("緯度経度の有効な行がありません。")
+                else:
+                    # Use speed for color gradient (slow = blue, fast = red)
+                    fig_map_detail = px.scatter_mapbox(
+                        df_map_detail,
+                        lat="latitude",
+                        lon="longitude",
+                        color="speed" if "speed" in df_map_detail else None,
+                        color_continuous_scale="RdYlBu_r",  # Red (fast) to Blue (slow), reversed
+                        hover_data={
+                            "time_local": True,
+                            "speed": True,
+                            "latitude": ":.6f",
+                            "longitude": ":.6f",
+                        },
+                        zoom=14,
+                        height=500,
+                    )
+                    fig_map_detail.update_layout(
+                        mapbox_style="open-street-map",
+                        coloraxis_colorbar=dict(title="速度")
+                    )
+                    st.plotly_chart(fig_map_detail, use_container_width=True)
+
+        with col2:
+            st.subheader("距離 vs 速度")
+            # Distance vs speed chart for selected lap
+            if "distance_normalized" not in df_detail:
+                st.warning("距離データがありません。")
+            elif "speed" not in df_detail:
+                st.warning("速度データがありません。")
+            else:
+                # Use scatter plot with color gradient matching the map
+                fig_dist_detail = px.scatter(
+                    df_detail,
+                    x="distance_normalized",
+                    y=speed_col,
+                    color="speed" if "speed" in df_detail else None,
+                    color_continuous_scale="RdYlBu_r",  # Same scale as map
+                    labels={"distance_normalized": "距離 (m)", speed_col: "速度"},
+                    hover_data={
+                        "time_local": True,
+                        "distance_normalized": ":.1f",
+                        speed_col: ":.2f",
+                    }
+                )
+
+                # Add line trace if not showing markers
+                if not show_markers:
+                    # Add a line connecting the points
+                    fig_dist_detail.add_scatter(
+                        x=df_detail["distance_normalized"],
+                        y=df_detail[speed_col],
+                        mode="lines",
+                        line=dict(color="gray", width=1),
+                        showlegend=False,
+                        hoverinfo="skip",
+                    )
+
+                fig_dist_detail.update_layout(
+                    hovermode="closest",
+                    height=500,
+                    coloraxis_colorbar=dict(title="速度")
+                )
+                st.plotly_chart(fig_dist_detail, use_container_width=True)
 
 # -----------------------------
 # Data preview
