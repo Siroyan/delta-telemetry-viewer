@@ -212,6 +212,21 @@ with st.sidebar:
     detail_lap = st.selectbox("詳細を見るラップ", options=[None] + laps, format_func=lambda x: "選択なし" if x is None else f"ラップ {x}")
     show_detail = detail_lap is not None
 
+    # Speed range settings for color mapping
+    if show_detail and "speed" in df:
+        st.subheader("色の範囲設定")
+        speed_min_default = float(df["speed"].min())
+        speed_max_default = float(df["speed"].max())
+
+        col_min, col_max = st.columns(2)
+        with col_min:
+            speed_color_min = st.number_input("最小速度", value=speed_min_default, step=1.0, format="%.1f")
+        with col_max:
+            speed_color_max = st.number_input("最大速度", value=speed_max_default, step=1.0, format="%.1f")
+    else:
+        speed_color_min = None
+        speed_color_max = None
+
 if "lap_number" in df:
     df_plot = df[df["lap_number"].isin(sel_laps)].copy()
 else:
@@ -342,7 +357,8 @@ if show_detail:
                         lat="latitude",
                         lon="longitude",
                         color="speed" if "speed" in df_map_detail else None,
-                        color_continuous_scale="RdYlBu_r",  # Red (fast) to Blue (slow), reversed
+                        color_continuous_scale="Turbo",  # Blue (slow) to Red (fast)
+                        range_color=[speed_color_min, speed_color_max] if speed_color_min is not None and speed_color_max is not None else None,
                         hover_data={
                             "time_local": True,
                             "speed": True,
@@ -372,7 +388,8 @@ if show_detail:
                     x="distance_normalized",
                     y=speed_col,
                     color="speed" if "speed" in df_detail else None,
-                    color_continuous_scale="RdYlBu_r",  # Same scale as map
+                    color_continuous_scale="Turbo",  # Same scale as map: Blue (slow) to Red (fast)
+                    range_color=[speed_color_min, speed_color_max] if speed_color_min is not None and speed_color_max is not None else None,
                     labels={"distance_normalized": "距離 (m)", speed_col: "速度"},
                     hover_data={
                         "time_local": True,
