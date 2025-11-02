@@ -188,8 +188,8 @@ def load_and_prepare_data(uploaded_file, default_path: str):
     if existing_data is not None:
         return existing_data
 
-    # Try loading default file
-    if os.path.exists(default_path):
+    # Try loading default file (only if default_path is provided)
+    if default_path is not None and os.path.exists(default_path):
         if "default_file_loaded" not in st.session_state:
             with open(default_path, "rb") as f:
                 df = load_csv(f.read())
