@@ -5,7 +5,7 @@ from utils import to_local_time
 
 def render_top_page(df, smooth, show_markers):
     """Render the top page with overview charts."""
-    st.title("Telemetry CSV Viewer (Streamlit + Plotly)")
+    st.title("delta-telemetry-viewer")
 
     # Build derived columns
     df = df.copy()
