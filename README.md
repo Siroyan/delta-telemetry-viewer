@@ -25,13 +25,42 @@ pip install -r requirements.txt
 
 ## 使い方
 
-### アプリケーションの起動
+### 方法1: 通常のStreamlitアプリとして実行
 
 ```bash
 streamlit run app.py
 ```
 
 ブラウザで `http://localhost:8501` にアクセスしてください。
+
+### 方法2: Stlite（ブラウザ版）として実行
+
+Stliteを使用すると、ブラウザ内でPythonを実行できるため、サーバー不要で静的ホスティング（AWS S3、GitHub Pagesなど）が可能です。
+
+#### ローカルでのテスト
+
+```bash
+cd stlite
+python -m http.server 8502
+```
+
+ブラウザで `http://localhost:8502` にアクセスしてください。
+
+#### AWS S3へのデプロイ
+
+1. S3バケットを作成し、静的Webサイトホスティングを有効化
+2. `stlite/`ディレクトリ内のすべてのファイルをS3バケットにアップロード
+3. バケットのパブリックアクセス設定を調整
+4. S3のWebサイトエンドポイントにアクセス
+
+#### GitHub Pagesへのデプロイ
+
+1. GitHubリポジトリの Settings > Pages を開く
+2. Source を「Deploy from a branch」に設定
+3. Branch を選択し、フォルダを `/stlite` に設定
+4. 数分後、`https://<username>.github.io/<repository>/` でアクセス可能
+
+**注意**: Stlite版は初回読み込みに時間がかかります（Pythonランタイムとライブラリをダウンロードするため）。
 
 ### CSVファイルの準備
 
@@ -92,9 +121,11 @@ streamlit run app.py
 ## 技術スタック
 
 - **[Streamlit](https://streamlit.io/)** (v1.50.0): Webアプリケーションフレームワーク
+- **[Stlite](https://github.com/whitphx/stlite)**: ブラウザ内でStreamlitを実行（WebAssembly/Pyodide）
 - **[Plotly](https://plotly.com/python/)** (v6.3.1): インタラクティブなグラフ作成
 - **[Pandas](https://pandas.pydata.org/)** (v2.3.3): データ処理
 - **[NumPy](https://numpy.org/)** (v2.3.4): 数値計算
+- **[streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu)** (v0.3.13): ナビゲーションメニュー
 
 ## ライセンス
 
