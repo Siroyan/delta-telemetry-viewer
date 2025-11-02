@@ -296,36 +296,6 @@ else:
             st.info(f"{group['title']}: データがありません")
 
 # -----------------------------
-# Map (Plotly Mapbox)
-# -----------------------------
-st.subheader("走行軌跡 (地図)")
-if "latitude" not in df_plot or "longitude" not in df_plot:
-    st.warning("このCSVには 'latitude' と 'longitude' 列が必要です。")
-else:
-    df_map = df_plot.dropna(subset=["latitude", "longitude"]).copy()
-    if df_map.empty:
-        st.info("緯度経度の有効な行がありません。")
-    else:
-        fig_map = px.scatter_mapbox(
-            df_map,
-            lat="latitude",
-            lon="longitude",
-            color=df_map["lap_number"].astype(str),
-            hover_data={
-                "time_local": True,
-                "speed": True,
-                "lap_number": True,
-                "latitude": ":.6f",
-                "longitude": ":.6f",
-            },
-            zoom=12,
-            height=600,
-        )
-        # OpenStreetMap style doesn't need a token
-        fig_map.update_layout(mapbox_style="open-street-map", legend_title_text="ラップ")
-        st.plotly_chart(fig_map, use_container_width=True)
-
-# -----------------------------
 # Lap Detail View
 # -----------------------------
 if show_detail:
@@ -365,11 +335,12 @@ if show_detail:
                             "latitude": ":.6f",
                             "longitude": ":.6f",
                         },
-                        zoom=14,
+                        zoom=15,
                         height=500,
                     )
                     fig_map_detail.update_layout(
                         mapbox_style="open-street-map",
+                        mapbox_bearing=60,  # Rotate map: 60 degrees clockwise
                         coloraxis_colorbar=dict(title="速度")
                     )
                     st.plotly_chart(fig_map_detail, use_container_width=True)
