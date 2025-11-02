@@ -187,7 +187,7 @@ def render_lap_details_page(df, smooth, show_markers):
                     fig_map_lap.update_layout(
                         mapbox_style="open-street-map",
                         mapbox_bearing=60,
-                        coloraxis_colorbar=dict(title="速度")
+                        coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction")
                     )
                     st.plotly_chart(fig_map_lap, use_container_width=True)
 
@@ -225,7 +225,7 @@ def render_lap_details_page(df, smooth, show_markers):
                 fig_dist_lap.update_layout(
                     hovermode="closest",
                     height=500,
-                    coloraxis_colorbar=dict(title="速度")
+                    coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction")
                 )
                 st.plotly_chart(fig_dist_lap, use_container_width=True)
 

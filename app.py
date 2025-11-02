@@ -32,10 +32,10 @@ with st.sidebar:
     st.divider()
 
     # CSV file upload
-    st.header("1) CSV ファイルを選択")
+    st.header("CSV ファイルを選択")
     uploaded = st.file_uploader("CSV を選択", type=["csv"], key="csv_uploader")
 
-    st.header("2) 表示オプション")
+    st.header("表示オプション")
     smooth = st.slider("移動平均(ポイント数)", min_value=1, max_value=21, value=1, step=2, key="smooth_slider")
     show_markers = st.checkbox("散布ポイントを表示", value=False, key="show_markers_checkbox")
 
