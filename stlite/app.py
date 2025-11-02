@@ -1,4 +1,5 @@
 import streamlit as st
+from streamlit_option_menu import option_menu
 
 # Import utility functions and page handlers
 from utils import load_and_prepare_data
@@ -18,14 +19,13 @@ st.logo("assets/logo.svg")
 # -----------------------------
 
 with st.sidebar:
-    # Navigation menu using st.radio (stlite compatible)
-    st.header("📊 delta telemetry viewer")
-    selected = st.radio(
-        "ページ選択",
+    # Navigation menu
+    selected = option_menu(
+        menu_title=None,
         options=["Top", "Lap Details"],
-        index=0,
-        key="main_menu",
-        label_visibility="collapsed"
+        icons=["house", "map"],
+        default_index=0,
+        key="main_menu"
     )
 
     st.divider()
