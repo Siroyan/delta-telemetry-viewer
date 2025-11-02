@@ -139,3 +139,64 @@ def to_local_time(df: pd.DataFrame, tz_name: str = "Asia/Tokyo") -> pd.Series:
         return ts.dt.tz_convert(tz_name)
     except Exception:
         return ts  # fallback UTC
+
+
+def get_shared_data():
+    """
+    Get the shared DataFrame from session state.
+    Returns None if no data is loaded yet.
+    """
+    if "shared_df" in st.session_state:
+        return st.session_state.shared_df
+    return None
+
+
+def set_shared_data(df: pd.DataFrame):
+    """
+    Store the DataFrame in session state for sharing across pages.
+    """
+    st.session_state.shared_df = df
+
+
+def load_and_prepare_data(uploaded_file, default_path: str):
+    """
+    Load CSV data and prepare it for use across all pages.
+    This function handles loading from uploaded file or default path,
+    and stores the result in session state.
+
+    Returns the prepared DataFrame or None if no data available.
+    """
+    import os
+
+    # Check if we already have data in session state
+    existing_data = get_shared_data()
+
+    # Load new data if file is uploaded
+    if uploaded_file is not None:
+        # Check if it's a new file (different from what we have)
+        file_key = f"{uploaded_file.name}_{uploaded_file.size}"
+        if "last_file_key" not in st.session_state or st.session_state.last_file_key != file_key:
+            df = load_csv(uploaded_file.getvalue())
+            set_shared_data(df)
+            st.session_state.last_file_key = file_key
+            return df
+        else:
+            # Same file, return existing data
+            return existing_data
+
+    # If no uploaded file but we have existing data, return it
+    if existing_data is not None:
+        return existing_data
+
+    # Try loading default file
+    if os.path.exists(default_path):
+        if "default_file_loaded" not in st.session_state:
+            with open(default_path, "rb") as f:
+                df = load_csv(f.read())
+            set_shared_data(df)
+            st.session_state.default_file_loaded = True
+            return df
+        else:
+            return existing_data
+
+    return None

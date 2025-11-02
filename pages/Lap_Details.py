@@ -6,7 +6,7 @@ import plotly.express as px
 # Import utility functions from parent directory
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from utils import load_csv, to_local_time
+from utils import load_and_prepare_data, to_local_time
 
 st.set_page_config(page_title="ラップ詳細", layout="wide")
 st.title("ラップ詳細表示")
@@ -16,25 +16,15 @@ with st.sidebar:
     st.header("1) CSV ファイルを選択")
     uploaded = st.file_uploader("CSV を選択", type=["csv"])
 
-    # Fallback to a default path
-    default_path = os.environ.get("DEFAULT_CSV_PATH", "/mnt/data/output_flat.csv")
-    use_default = False
-    if uploaded is None and os.path.exists(default_path):
-        use_default = st.toggle("サンプルCSVを使う (自動)", value=True)
-
     st.header("2) 表示オプション")
     smooth = st.slider("移動平均(ポイント数)", min_value=1, max_value=21, value=1, step=2)
     show_markers = st.checkbox("散布ポイントを表示", value=False)
 
     st.header("3) 色の範囲設定")
 
-# Load data
-df = None
-if uploaded is not None:
-    df = load_csv(uploaded.getvalue())
-elif use_default and os.path.exists(default_path):
-    with open(default_path, "rb") as f:
-        df = load_csv(f.read())
+# Load data using shared session state
+default_path = os.environ.get("DEFAULT_CSV_PATH", "/mnt/data/output_flat.csv")
+df = load_and_prepare_data(uploaded, default_path)
 
 if df is None:
     st.info("左のサイドバーからCSVファイルを選択してください。")
