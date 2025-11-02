@@ -30,9 +30,24 @@ with st.sidebar:
 
     st.divider()
 
+    # CSV file selection
+    st.header("データを選択")
+
+    # Sample data selection
+    # Note: Available sample files must be registered in index.html
+    sample_files = {
+        "なし": None,
+        "emc_zenkoku_2025.csv": "data/emc_zenkoku_2025.csv",
+    }
+
+    selected_sample = st.selectbox(
+        "サンプルデータ",
+        options=list(sample_files.keys()),
+        key="sample_selector"
+    )
+
     # CSV file upload
-    st.header("CSV ファイルを選択")
-    uploaded = st.file_uploader("CSV を選択", type=["csv"], key="csv_uploader")
+    uploaded = st.file_uploader("または、CSVファイルをアップロード", type=["csv"], key="csv_uploader")
 
     st.header("表示オプション")
     smooth = st.slider("移動平均(ポイント数)", min_value=1, max_value=21, value=1, step=2, key="smooth_slider")
@@ -42,12 +57,20 @@ with st.sidebar:
 # Load Data
 # -----------------------------
 
-# Note: In stlite (browser environment), we don't have access to local file system
-# Users must upload a CSV file
-df = load_and_prepare_data(uploaded, default_path=None)
+# Determine which data source to use
+sample_path = sample_files.get(selected_sample)
+
+# Priority: uploaded file > sample file
+if uploaded is not None:
+    df = load_and_prepare_data(uploaded, default_path=None)
+elif sample_path is not None:
+    # Load sample file from data/ folder
+    df = load_and_prepare_data(None, default_path=sample_path)
+else:
+    df = None
 
 if df is None:
-    st.info("左のサイドバーからCSVファイルを選択してください。")
+    st.info("左のサイドバーからサンプルデータを選択するか、CSVファイルをアップロードしてください。")
     st.stop()
 
 # -----------------------------
