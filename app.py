@@ -1,6 +1,4 @@
-import os
 import streamlit as st
-from streamlit_option_menu import option_menu
 
 # Import utility functions and page handlers
 from utils import load_and_prepare_data
@@ -20,13 +18,14 @@ st.logo("assets/logo.svg")
 # -----------------------------
 
 with st.sidebar:
-    # Navigation menu
-    selected = option_menu(
-        menu_title=None,
+    # Navigation menu (using st.radio for stlite compatibility)
+    st.subheader("ページ")
+    selected = st.radio(
+        "ナビゲーション",
         options=["Top", "Lap Details"],
-        icons=["house", "map"],
-        default_index=0,
-        key="main_menu"
+        index=0,
+        key="main_menu",
+        label_visibility="collapsed"
     )
 
     st.divider()
@@ -43,8 +42,9 @@ with st.sidebar:
 # Load Data
 # -----------------------------
 
-default_path = os.environ.get("DEFAULT_CSV_PATH", "/mnt/data/output_flat.csv")
-df = load_and_prepare_data(uploaded, default_path)
+# Note: In stlite (browser environment), we don't have access to local file system
+# Users must upload a CSV file
+df = load_and_prepare_data(uploaded, default_path=None)
 
 if df is None:
     st.info("左のサイドバーからCSVファイルを選択してください。")

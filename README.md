@@ -25,42 +25,42 @@ pip install -r requirements.txt
 
 ## 使い方
 
-### 方法1: 通常のStreamlitアプリとして実行
+このアプリケーションは **Stlite（ブラウザ版Streamlit）** を使用して、サーバー不要で動作します。ブラウザ内でPythonが実行されるため、AWS S3やGitHub Pagesなどの静的ホスティングサービスで公開できます。
+
+### ローカルでのテスト
 
 ```bash
-streamlit run app.py
-```
-
-ブラウザで `http://localhost:8501` にアクセスしてください。
-
-### 方法2: Stlite（ブラウザ版）として実行
-
-Stliteを使用すると、ブラウザ内でPythonを実行できるため、サーバー不要で静的ホスティング（AWS S3、GitHub Pagesなど）が可能です。
-
-#### ローカルでのテスト
-
-```bash
-cd stlite
 python -m http.server 8502
 ```
 
 ブラウザで `http://localhost:8502` にアクセスしてください。
 
-#### AWS S3へのデプロイ
+**注意**: 初回読み込みには時間がかかります（Pythonランタイムとライブラリをダウンロードするため）。
+
+### AWS S3へのデプロイ
 
 1. S3バケットを作成し、静的Webサイトホスティングを有効化
-2. `stlite/`ディレクトリ内のすべてのファイルをS3バケットにアップロード
-3. バケットのパブリックアクセス設定を調整
+2. プロジェクトルートの`index.html`、`app.py`、`utils.py`、`page_handlers.py`、`assets/`フォルダをS3バケットにアップロード
+3. バケットのパブリックアクセス設定を調整（パブリック読み取りを許可）
 4. S3のWebサイトエンドポイントにアクセス
 
-#### GitHub Pagesへのデプロイ
+### GitHub Pagesへのデプロイ
 
 1. GitHubリポジトリの Settings > Pages を開く
 2. Source を「Deploy from a branch」に設定
-3. Branch を選択し、フォルダを `/stlite` に設定
+3. Branch を選択（通常は`main`）、フォルダを `/`（root）に設定
 4. 数分後、`https://<username>.github.io/<repository>/` でアクセス可能
 
-**注意**: Stlite版は初回読み込みに時間がかかります（Pythonランタイムとライブラリをダウンロードするため）。
+### 従来のStreamlitサーバーとして実行（非推奨）
+
+従来のStreamlitサーバーとして実行する場合は、以下の変更が必要です：
+
+1. `app.py`の49行目：`default_path=None` → `default_path=os.environ.get("DEFAULT_CSV_PATH")`を追加
+2. ファイル先頭に`import os`を追加
+
+```bash
+streamlit run app.py
+```
 
 ### CSVファイルの準備
 
@@ -93,21 +93,13 @@ timestamp_ms,speed,lap_number,latitude,longitude
 ### 使用手順
 
 1. **CSVファイルのアップロード**: 左サイドバーの「CSV ファイルを選択」からファイルを選択
-2. **タイムゾーンの設定**: お好みのタイムゾーンを選択（デフォルト: Asia/Tokyo）
+2. **ページ選択**: "Top"（全体ビュー）または"Lap Details"（ラップ詳細）を選択
 3. **表示オプションの調整**:
    - 移動平均のウィンドウサイズを調整（1-21ポイント）
    - 散布ポイントの表示/非表示を切り替え
-4. **ラップの選択**: 表示したいラップ番号を選択
-5. **データの確認**: グラフと地図でデータを可視化
+4. **データの確認**: グラフと地図でデータを可視化
 
-### デフォルトCSVファイルの使用
-
-環境変数 `DEFAULT_CSV_PATH` を設定することで、デフォルトのCSVファイルを指定できます：
-
-```bash
-export DEFAULT_CSV_PATH="/path/to/your/data.csv"
-streamlit run app.py
-```
+**注意**: Stlite版ではブラウザ内でファイルを処理するため、アップロードしたCSVファイルはサーバーに送信されません（プライバシー保護）。
 
 ## 開発環境
 
@@ -120,12 +112,17 @@ streamlit run app.py
 
 ## 技術スタック
 
-- **[Streamlit](https://streamlit.io/)** (v1.50.0): Webアプリケーションフレームワーク
-- **[Stlite](https://github.com/whitphx/stlite)**: ブラウザ内でStreamlitを実行（WebAssembly/Pyodide）
+- **[Stlite](https://github.com/whitphx/stlite)** (@stlite/browser v0.89.1): ブラウザ内でStreamlit 1.48.0を実行（WebAssembly/Pyodide）
 - **[Plotly](https://plotly.com/python/)** (v6.3.1): インタラクティブなグラフ作成
 - **[Pandas](https://pandas.pydata.org/)** (v2.3.3): データ処理
 - **[NumPy](https://numpy.org/)** (v2.3.4): 数値計算
-- **[streamlit-option-menu](https://github.com/victoryhb/streamlit-option-menu)** (v0.3.13): ナビゲーションメニュー
+- **[Pytz](https://pythonhosted.org/pytz/)** (v2025.2): タイムゾーン処理
+
+**メリット:**
+- サーバー不要（静的ホスティング可能）
+- 低コスト運用（S3やGitHub Pagesで月数円〜無料）
+- プライバシー保護（データがブラウザ外に出ない）
+- オフライン動作可能（初回読み込み後）
 
 ## ライセンス
 
