@@ -26,15 +26,9 @@ def render_top_page(df, smooth, show_markers):
         if "distance" in df:
             df["distance_normalized"] = df["distance"]
 
-    # Lap filter
-    laps = sorted(df["lap_number"].dropna().unique().tolist()) if "lap_number" in df else [1]
-    with st.sidebar:
-        sel_laps = st.multiselect("表示するラップ", laps, default=laps, key="top_lap_filter")
-
-    if "lap_number" in df:
-        df_plot = df[df["lap_number"].isin(sel_laps)].copy()
-    else:
-        df_plot = df.copy()
+    # Use all laps
+    df_plot = df.copy()
+    if "lap_number" not in df_plot:
         df_plot["lap_number"] = 1
 
     # Time vs Speed
@@ -125,8 +119,8 @@ def render_lap_details_page(df, smooth, show_markers):
 
     # Speed range settings
     if "speed" in df:
-        speed_min_default = float(df["speed"].min())
-        speed_max_default = float(df["speed"].max())
+        speed_min_default = 0.0
+        speed_max_default = 50.0
 
         with st.sidebar:
             st.subheader("色の範囲設定")

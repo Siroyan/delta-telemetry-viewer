@@ -1,12 +1,11 @@
-<svg width="240" height="60" xmlns="http://www.w3.org/2000/svg">
+<svg width="280" height="40" xmlns="http://www.w3.org/2000/svg">
   <style>
     .logo-text {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      font-size: 20px;
+      font-size: 24px;
       font-weight: 600;
       fill: #262730;
     }
   </style>
-  <text x="0" y="25" class="logo-text">delta telemetry</text>
-  <text x="0" y="50" class="logo-text">viewer</text>
+  <text x="0" y="28" class="logo-text">delta telemetry viewer</text>
 </svg>
