@@ -225,7 +225,8 @@ def render_lap_details_page(df, smooth, show_markers):
                 fig_dist_lap.update_layout(
                     hovermode="closest",
                     height=500,
-                    coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction")
+                    coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction"),
+                    xaxis=dict(range=[0, 3000])
                 )
                 st.plotly_chart(fig_dist_lap, use_container_width=True)
 
