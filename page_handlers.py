@@ -49,13 +49,35 @@ def render_top_page(df, smooth, show_markers):
         fig_line.update_layout(legend_title_text="ラップ", hovermode="x unified")
         st.plotly_chart(fig_line, use_container_width=True)
 
-    # Distance vs Speed - Multiple Charts
-    st.subheader("距離 vs 速度 (ラップ別カラー)")
+    # Distance vs Speed - All Laps
+    st.subheader("距離 vs 速度 (全ラップ)")
     if "distance_normalized" not in df_plot:
         st.warning("このCSVには 'distance' 列が見つかりませんでした。")
     elif "speed" not in df_plot:
         st.warning("このCSVには 'speed' 列が見つかりませんでした。")
     else:
+        line_mode = "lines+markers" if show_markers else "lines"
+
+        # All laps in one chart
+        fig_dist_all = px.line(
+            df_plot,
+            x="distance_normalized",
+            y=speed_col,
+            color=df_plot["lap_number"].astype(str),
+            labels={"distance_normalized": "距離 (m)", speed_col: "速度", "color": "ラップ"},
+            markers=show_markers,
+        )
+        fig_dist_all.update_traces(mode=line_mode)
+        fig_dist_all.update_layout(
+            legend_title_text="ラップ",
+            hovermode="x unified",
+            xaxis=dict(range=[0, 3000])
+        )
+        st.plotly_chart(fig_dist_all, use_container_width=True)
+
+    # Distance vs Speed - Grouped Charts
+    st.subheader("距離 vs 速度 (ラップ別グループ)")
+    if "distance_normalized" in df_plot and "speed" in df_plot:
         line_mode = "lines+markers" if show_markers else "lines"
 
         lap_groups = [
