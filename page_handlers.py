@@ -71,7 +71,7 @@ def render_top_page(df, smooth, show_markers):
         fig_dist_all.update_layout(
             legend_title_text="ラップ",
             hovermode="x unified",
-            xaxis=dict(range=[0, 3000])
+            xaxis=dict(range=[0, 2500])
         )
         st.plotly_chart(fig_dist_all, use_container_width=True)
 
@@ -103,7 +103,7 @@ def render_top_page(df, smooth, show_markers):
                 fig_dist.update_layout(
                     legend_title_text="ラップ",
                     hovermode="x unified",
-                    xaxis=dict(range=[0, 3000])
+                    xaxis=dict(range=[0, 2500])
                 )
                 st.plotly_chart(fig_dist, use_container_width=True)
             else:
@@ -248,7 +248,7 @@ def render_lap_details_page(df, smooth, show_markers):
                     hovermode="closest",
                     height=500,
                     coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction"),
-                    xaxis=dict(range=[0, 3000])
+                    xaxis=dict(range=[0, 2500])
                 )
                 st.plotly_chart(fig_dist_lap, use_container_width=True)
 
