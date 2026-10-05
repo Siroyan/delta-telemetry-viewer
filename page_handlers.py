@@ -194,6 +194,10 @@ def render_lap_details_page(df, smooth, show_markers):
                         df_map_lap,
                         lat="latitude",
                         lon="longitude",
+                        center={
+                            "lat": float(df_map_lap["latitude"].median()),
+                            "lon": float(df_map_lap["longitude"].median()),
+                        },
                         color="speed" if "speed" in df_map_lap else None,
                         color_continuous_scale="Turbo",
                         range_color=[speed_color_min, speed_color_max] if speed_color_min is not None and speed_color_max is not None else None,
