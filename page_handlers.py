@@ -190,7 +190,7 @@ def render_lap_details_page(df, smooth, show_markers):
                 if df_map_lap.empty:
                     st.info("緯度経度の有効な行がありません。")
                 else:
-                    fig_map_lap = px.scatter_mapbox(
+                    fig_map_lap = px.scatter_map(
                         df_map_lap,
                         lat="latitude",
                         lon="longitude",
@@ -203,12 +203,12 @@ def render_lap_details_page(df, smooth, show_markers):
                             "latitude": ":.6f",
                             "longitude": ":.6f",
                         },
+                        map_style="open-street-map",
                         zoom=15,
                         height=500,
                     )
                     fig_map_lap.update_layout(
-                        mapbox_style="open-street-map",
-                        mapbox_bearing=60,
+                        map_bearing=60,
                         coloraxis_colorbar=dict(title="速度", len=1.1, lenmode="fraction")
                     )
                     st.plotly_chart(fig_map_lap, use_container_width=True)
